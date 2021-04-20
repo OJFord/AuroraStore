@@ -25,6 +25,9 @@ import android.content.res.Configuration
 import android.os.Build
 import android.text.TextUtils
 import com.aurora.extensions.isHuawei
+import com.aurora.store.util.PathUtil
+import com.aurora.store.util.isExternalStorageEnable
+import java.io.FileOutputStream
 import java.util.*
 
 class NativeDeviceInfoProvider(context: Context) : ContextWrapper(context) {
@@ -120,6 +123,9 @@ class NativeDeviceInfoProvider(context: Context) : ContextWrapper(context) {
 
         if (isHuawei())
             stripHuaweiProperties(properties)
+
+        if (isExternalStorageEnable())
+            properties.store(FileOutputStream(PathUtil.getExternalPath() + "/native-device.properties.export"), "")
 
         return properties
     }
