@@ -76,6 +76,8 @@ class AppDetailsActivity : BaseDetailsActivity() {
     private lateinit var downloadManager: DownloadManager
     private lateinit var fetch: Fetch
     private lateinit var fetchGroupListener: FetchGroupListener
+    private lateinit var completionMarker: java.io.File
+    private lateinit var inProgressMarker: java.io.File
 
     private var isExternal = false
     private var isNone = false
@@ -661,6 +663,14 @@ class AppDetailsActivity : BaseDetailsActivity() {
                 if (groupId == app.id) {
                     status = download.status
                     flip(1)
+
+                    val pkgDir = PathUtil.getPackageDirectory(applicationContext, app.packageName)
+                    completionMarker = java.io.File("%s/.%d.download-complete".format(pkgDir, app.versionCode))
+                    inProgressMarker = java.io.File("%s/.%d.download-in-progress".format(pkgDir, app.versionCode))
+
+                    if (completionMarker.exists())
+                        completionMarker.delete()
+                    inProgressMarker.createNewFile()
                 }
             }
 
@@ -668,6 +678,7 @@ class AppDetailsActivity : BaseDetailsActivity() {
                 if (groupId == app.id) {
                     status = download.status
                     flip(1)
+                    FileUtils.touch(inProgressMarker)
                 }
             }
 
@@ -699,6 +710,8 @@ class AppDetailsActivity : BaseDetailsActivity() {
                     status = download.status
                     flip(0)
                     updateProgress(fetchGroup, -1, -1)
+                    inProgressMarker.delete()
+                    completionMarker.createNewFile()
                     try {
                         verifyAndInstall(fetchGroup.downloads)
                     } catch (e: Exception) {
@@ -711,6 +724,7 @@ class AppDetailsActivity : BaseDetailsActivity() {
                 if (groupId == app.id) {
                     status = download.status
                     flip(0)
+                    inProgressMarker.delete()
                 }
             }
 
@@ -724,6 +738,7 @@ class AppDetailsActivity : BaseDetailsActivity() {
                 if (groupId == app.id) {
                     status = download.status
                     flip(0)
+                    inProgressMarker.delete()
                 }
             }
         }
